@@ -192,6 +192,20 @@ def seed_teas():
         create_document("tea", t)
     return {"status": "seeded", "count": len(catalog)}
 
+# --------- Tea catalog read endpoints (for detail pages) ---------
+@app.get("/api/teas", response_model=List[Tea])
+def list_teas():
+    docs = get_documents("tea")
+    return [Tea(**{k: v for k, v in d.items() if k != "_id"}) for d in docs]
+
+@app.get("/api/teas/{key}", response_model=Tea)
+def get_tea(key: str):
+    docs = get_documents("tea", {"key": key}, limit=1)
+    if not docs:
+        raise HTTPException(status_code=404, detail="Tea not found")
+    doc = docs[0]
+    return Tea(**{k: v for k, v in doc.items() if k != "_id"})
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
